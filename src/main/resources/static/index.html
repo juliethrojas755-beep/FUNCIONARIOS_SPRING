@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Directorio web de funcionarios">
+    <title>Directorio de funcionarios</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+</head>
+<body>
+    <header class="encabezado">
+        <div class="contenedor">
+            <p class="etiqueta">BOOTCAMP · SPRING BOOT</p>
+            <h1>Directorio de funcionarios</h1>
+            <p>Consulta, registra y mantén actualizada la información del equipo.</p>
+        </div>
+    </header>
+
+    <main class="contenedor contenido">
+        <section class="panel" aria-labelledby="titulo-formulario">
+            <div class="titulo-seccion">
+                <div>
+                    <p class="etiqueta">REGISTRO</p>
+                    <h2 id="titulo-formulario">Nuevo funcionario</h2>
+                </div>
+                <span id="estado-formulario" class="estado-formulario">Creando</span>
+            </div>
+
+            <form id="formulario-funcionario">
+                <label for="nombre">Nombre <span aria-hidden="true">*</span></label>
+                <input id="nombre" name="nombre" type="text" maxlength="120" required>
+
+                <label for="cargo">Cargo <span aria-hidden="true">*</span></label>
+                <input id="cargo" name="cargo" type="text" maxlength="100" required>
+
+                <label for="departamento">Departamento <span aria-hidden="true">*</span></label>
+                <input id="departamento" name="departamento" type="text" maxlength="100" required>
+
+                <label for="telefono">Teléfono <span class="texto-opcional">(opcional)</span></label>
+                <input id="telefono" name="telefono" type="tel" maxlength="30">
+
+                <div class="acciones-formulario">
+                    <button id="guardar" class="boton boton-principal" type="submit">Guardar funcionario</button>
+                    <button id="limpiar" class="boton boton-secundario" type="button">Limpiar formulario</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel" aria-labelledby="titulo-busqueda">
+            <div class="titulo-seccion">
+                <div>
+                    <p class="etiqueta">CONSULTA</p>
+                    <h2 id="titulo-busqueda">Buscar funcionarios</h2>
+                </div>
+            </div>
+
+            <div class="busquedas">
+                <form id="buscar-id" class="busqueda">
+                    <label for="id-busqueda">Por ID</label>
+                    <div class="grupo-busqueda">
+                        <input id="id-busqueda" type="number" min="1" step="1" placeholder="Ej. 1" required>
+                        <button class="boton boton-secundario" type="submit">Buscar</button>
+                    </div>
+                </form>
+                <form id="buscar-nombre" class="busqueda">
+                    <label for="nombre-busqueda">Por parte del nombre</label>
+                    <div class="grupo-busqueda">
+                        <input id="nombre-busqueda" type="search" placeholder="Ej. Ana" required>
+                        <button class="boton boton-secundario" type="submit">Buscar</button>
+                    </div>
+                </form>
+                <form id="buscar-departamento" class="busqueda">
+                    <label for="departamento-busqueda">Por departamento</label>
+                    <div class="grupo-busqueda">
+                        <input id="departamento-busqueda" type="search" placeholder="Ej. Contabilidad" required>
+                        <button class="boton boton-secundario" type="submit">Buscar</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section class="panel" aria-labelledby="titulo-listado">
+            <div class="titulo-seccion listado-encabezado">
+                <div>
+                    <p class="etiqueta">DIRECTORIO</p>
+                    <h2 id="titulo-listado">Funcionarios</h2>
+                </div>
+                <button id="mostrar-todos" class="boton boton-secundario" type="button">
+                    Volver al listado completo
+                </button>
+            </div>
+
+            <p id="mensaje" class="mensaje" role="status" aria-live="polite"></p>
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Nombre</th>
+                            <th scope="col">Cargo</th>
+                            <th scope="col">Departamento</th>
+                            <th scope="col">Teléfono</th>
+                            <th scope="col">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="filas-funcionarios"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="pie">
+        <div class="contenedor">Directorio de funcionarios · Taller de Java y Spring Boot</div>
+    </footer>
+</body>
+</html>
