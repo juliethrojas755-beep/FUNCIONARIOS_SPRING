@@ -26,6 +26,11 @@ public class ApiExceptionHandler {
         return crearRespuesta(HttpStatus.BAD_REQUEST, excepcion.getMessage());
     }
 
+    @ExceptionHandler(UsuarioYaExisteException.class)
+    public ResponseEntity<ApiError> manejarUsuarioYaExiste(UsuarioYaExisteException excepcion) {
+        return crearRespuesta(HttpStatus.CONFLICT, excepcion.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> manejarValidacion(MethodArgumentNotValidException excepcion) {
         String mensaje = excepcion.getBindingResult().getFieldErrors().stream()

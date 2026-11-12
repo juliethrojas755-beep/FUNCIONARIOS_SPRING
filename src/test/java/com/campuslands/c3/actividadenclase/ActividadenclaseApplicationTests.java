@@ -17,13 +17,20 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Prueba la respuesta REST del controlador sin necesitar una base de datos real.
+ *
+ * Desde que el proyecto tiene Spring Security, estas pruebas simulan una sesión ya
+ * iniciada con @WithMockUser: lo que se está probando aquí es el comportamiento del
+ * directorio (listar, buscar, validar), no el login en sí, que se prueba aparte en
+ * AuthFlowIntegrationTest.
  */
 @WebMvcTest(FuncionarioController.class)
+@WithMockUser
 class ActividadenclaseApplicationTests {
 
     @Autowired
@@ -59,6 +66,7 @@ class ActividadenclaseApplicationTests {
     @Test
     void crearSinCamposObligatoriosDevuelve400() throws Exception {
         mockMvc.perform(post("/api/v1/funcionarios")
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {
@@ -107,6 +115,7 @@ class ActividadenclaseApplicationTests {
     @Test
     void registrarConIdNoNuloDevuelve400() throws Exception {
         mockMvc.perform(post("/api/v1/funcionarios")
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {

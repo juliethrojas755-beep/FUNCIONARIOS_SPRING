@@ -1,6 +1,7 @@
 "use strict";
 
 const API_URL = "/api/v1/funcionarios";
+const METODOS_QUE_CAMBIAN_DATOS = new Set(["POST", "PUT", "DELETE", "PATCH"]);
 
 const formulario = document.querySelector("#formulario-funcionario");
 const filasFuncionarios = document.querySelector("#filas-funcionarios");
@@ -8,20 +9,35 @@ const mensaje = document.querySelector("#mensaje");
 const tituloFormulario = document.querySelector("#titulo-formulario");
 const estadoFormulario = document.querySelector("#estado-formulario");
 const botonGuardar = document.querySelector("#guardar");
+const usuarioActualEtiqueta = document.querySelector("#usuario-actual");
+const botonCerrarSesion = document.querySelector("#cerrar-sesion");
 
 let idEnEdicion = null;
 
+/** Lee la cookie XSRF-TOKEN que pone Spring Security para devolverla en el encabezado. */
+function leerTokenCsrf() {
+    const coincidencia = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+    return coincidencia ? decodeURIComponent(coincidencia[1]) : null;
+}
+
 /**
  * Pide datos al backend y convierte las respuestas HTTP de error en mensajes útiles.
+ * Si la sesión venció (401/403), manda a la persona a iniciar sesión de nuevo.
  */
 async function solicitar(ruta, opciones = {}) {
-    const respuesta = await fetch(ruta, {
-        headers: {
-            "Content-Type": "application/json",
-            ...opciones.headers
-        },
-        ...opciones
-    });
+    const metodo = (opciones.method ?? "GET").toUpperCase();
+    const cabeceras = { ...opciones.headers };
+    if (METODOS_QUE_CAMBIAN_DATOS.has(metodo)) {
+        cabeceras["Content-Type"] = cabeceras["Content-Type"] ?? "application/json";
+        cabeceras["X-XSRF-TOKEN"] = leerTokenCsrf() ?? "";
+    }
+
+    const respuesta = await fetch(ruta, { ...opciones, headers: cabeceras });
+
+    if (respuesta.status === 401 || respuesta.status === 403) {
+        window.location.href = "/login.html";
+        throw new Error("Tu sesión no es válida o venció.");
+    }
 
     if (!respuesta.ok) {
         let detalle = `La solicitud falló (HTTP ${respuesta.status}).`;
@@ -254,4 +270,31 @@ document.querySelector("#buscar-departamento").addEventListener("submit", async 
     }
 });
 
+/** Pregunta quién inició sesión para mostrarlo en la barra de arriba. */
+async function cargarUsuarioActual() {
+    try {
+        const respuesta = await fetch("/api/auth/me");
+        const datos = await respuesta.json();
+        if (datos.autenticado) {
+            usuarioActualEtiqueta.textContent = `Conectado como ${datos.username}`;
+        } else {
+            window.location.href = "/login.html";
+        }
+    } catch {
+        // Si no se puede confirmar la sesión, se deja que las llamadas a la API lo resuelvan.
+    }
+}
+
+botonCerrarSesion.addEventListener("click", async () => {
+    try {
+        await fetch("/api/auth/logout", {
+            method: "POST",
+            headers: { "X-XSRF-TOKEN": leerTokenCsrf() ?? "" }
+        });
+    } finally {
+        window.location.href = "/login.html";
+    }
+});
+
+cargarUsuarioActual();
 cargarTodos();
