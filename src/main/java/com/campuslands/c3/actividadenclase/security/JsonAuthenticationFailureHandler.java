@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -43,7 +45,7 @@ public class JsonAuthenticationFailureHandler implements AuthenticationFailureHa
             LocalDateTime bloqueadoHasta = username == null || username.isBlank()
                     ? null
                     : usuarioService.obtenerBloqueadoHasta(username);
-            JsonResponder.escribir(response, 423, "mensaje", mensajeDeBloqueo(bloqueadoHasta));
+            responderBloqueo(response, bloqueadoHasta);
             return;
         }
 
@@ -52,18 +54,30 @@ public class JsonAuthenticationFailureHandler implements AuthenticationFailureHa
                 : usuarioService.registrarIntentoFallido(username);
 
         if (bloqueadoHasta != null) {
-            JsonResponder.escribir(response, 423, "mensaje", mensajeDeBloqueo(bloqueadoHasta));
+            responderBloqueo(response, bloqueadoHasta);
         } else {
             JsonResponder.escribir(response, HttpServletResponse.SC_UNAUTHORIZED, "mensaje", MENSAJE_GENERICO);
         }
     }
 
-    private String mensajeDeBloqueo(LocalDateTime bloqueadoHasta) {
+    /**
+     * Responde 423 (Locked) con el mensaje y los segundos que faltan, para que login.js
+     * muestre la cuenta regresiva y desactive el botón mientras dura el bloqueo.
+     */
+    private void responderBloqueo(HttpServletResponse response, LocalDateTime bloqueadoHasta) throws IOException {
+        long segundos = segundosRestantes(bloqueadoHasta);
+        Map<String, Object> cuerpo = new LinkedHashMap<>();
+        cuerpo.put("mensaje", "Demasiados intentos fallidos. Cuenta bloqueada, intenta de nuevo en "
+                + segundos + (segundos == 1 ? " segundo." : " segundos."));
+        cuerpo.put("segundosRestantes", segundos);
+        JsonResponder.escribir(response, 423, cuerpo);
+    }
+
+    private long segundosRestantes(LocalDateTime bloqueadoHasta) {
         if (bloqueadoHasta == null) {
-            return "Esta cuenta está bloqueada temporalmente por demasiados intentos fallidos. Intenta de nuevo más tarde.";
+            return 1;
         }
-        long minutos = Math.max(1, Duration.between(LocalDateTime.now(), bloqueadoHasta).toMinutes());
-        return "Demasiados intentos fallidos. Intenta de nuevo en " + minutos
-                + (minutos == 1 ? " minuto." : " minutos.");
+        long milisegundos = Duration.between(LocalDateTime.now(), bloqueadoHasta).toMillis();
+        return Math.max(1, (milisegundos + 999) / 1000); // redondea hacia arriba
     }
 }

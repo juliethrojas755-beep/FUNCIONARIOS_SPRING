@@ -8,6 +8,8 @@ const pestanaRegistro = document.querySelector("#pestana-registro");
 const formularioLogin = document.querySelector("#formulario-login");
 const formularioRegistro = document.querySelector("#formulario-registro");
 const mensajeAcceso = document.querySelector("#mensaje-acceso");
+const botonLogin = formularioLogin.querySelector('button[type="submit"]');
+let temporizadorBloqueo = null;
 
 /** Lee la cookie XSRF-TOKEN que pone Spring Security para poder mandarla de vuelta. */
 function leerTokenCsrf() {
@@ -27,13 +29,44 @@ function limpiarMensaje() {
 
 function mostrarPestana(pestanaAMostrar) {
     const esLogin = pestanaAMostrar === "login";
+    const bloqueado = botonLogin.disabled;
     pestanaLogin.classList.toggle("activa", esLogin);
     pestanaRegistro.classList.toggle("activa", !esLogin);
     pestanaLogin.setAttribute("aria-selected", String(esLogin));
     pestanaRegistro.setAttribute("aria-selected", String(!esLogin));
     formularioLogin.classList.toggle("oculto", !esLogin);
     formularioRegistro.classList.toggle("oculto", esLogin);
-    limpiarMensaje();
+    if (!bloqueado) {
+        limpiarMensaje(); // si sigue el contador, se deja el aviso a la vista
+    }
+}
+
+/**
+ * Cuando el servidor bloquea la cuenta (HTTP 423), desactiva el botón y muestra
+ * cuántos segundos faltan, bajando de uno en uno hasta que se pueda volver a intentar.
+ */
+function iniciarCuentaRegresiva(segundos) {
+    clearInterval(temporizadorBloqueo);
+    let restantes = segundos;
+    botonLogin.disabled = true;
+
+    const pintar = () => {
+        mostrarMensaje(`Cuenta bloqueada por demasiados intentos fallidos. Intenta de nuevo en ${restantes} segundo${restantes === 1 ? "" : "s"}.`);
+        botonLogin.textContent = `Bloqueado (${restantes}s)`;
+    };
+    pintar();
+
+    temporizadorBloqueo = setInterval(() => {
+        restantes -= 1;
+        if (restantes <= 0) {
+            clearInterval(temporizadorBloqueo);
+            botonLogin.disabled = false;
+            botonLogin.textContent = "Iniciar sesión";
+            mostrarMensaje("Ya puedes intentar de nuevo.", false);
+            return;
+        }
+        pintar();
+    }, 1000);
 }
 
 pestanaLogin.addEventListener("click", () => mostrarPestana("login"));
@@ -74,6 +107,11 @@ formularioLogin.addEventListener("submit", async (evento) => {
 
         if (respuesta.ok) {
             window.location.href = "/";
+            return;
+        }
+
+        if (respuesta.status === 423 && datos.segundosRestantes) {
+            iniciarCuentaRegresiva(Number(datos.segundosRestantes));
             return;
         }
 

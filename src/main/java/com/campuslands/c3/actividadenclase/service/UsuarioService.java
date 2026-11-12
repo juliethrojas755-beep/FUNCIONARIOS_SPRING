@@ -129,7 +129,7 @@ public class UsuarioService {
                     }
                     usuario.setIntentosFallidos(usuario.getIntentosFallidos() + 1);
                     if (usuario.getIntentosFallidos() >= bloqueo.getMaxIntentos() && usuario.getBloqueadoHasta() == null) {
-                        LocalDateTime hasta = LocalDateTime.now().plus(Duration.ofMinutes(bloqueo.getMinutosBloqueo()));
+                        LocalDateTime hasta = LocalDateTime.now().plus(Duration.ofSeconds(bloqueo.getSegundosBloqueo()));
                         usuario.setBloqueadoHasta(hasta);
                         return hasta;
                     }

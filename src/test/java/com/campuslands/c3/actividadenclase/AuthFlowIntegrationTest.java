@@ -156,7 +156,8 @@ class AuthFlowIntegrationTest {
                         .param("username", "sofia")
                         .param("password", "IncorrectaFinal!"))
                 .andExpect(status().is(423))
-                .andExpect(jsonPath("$.mensaje").value(org.hamcrest.Matchers.containsString("Demasiados intentos fallidos")));
+                .andExpect(jsonPath("$.mensaje").value(org.hamcrest.Matchers.containsString("Demasiados intentos fallidos")))
+                .andExpect(jsonPath("$.segundosRestantes").value(org.hamcrest.Matchers.lessThanOrEqualTo(30)));
 
         // Aunque ahora escriba la contraseña correcta, la cuenta sigue bloqueada.
         mockMvc.perform(post("/api/auth/login")

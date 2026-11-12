@@ -41,7 +41,7 @@ class UsuarioServiceTest {
         PasswordPolicyProperties politica = new PasswordPolicyProperties();
         lockoutProperties = new LockoutProperties();
         lockoutProperties.setMaxIntentos(3);
-        lockoutProperties.setMinutosBloqueo(15);
+        lockoutProperties.setSegundosBloqueo(30);
         usuarioService = new UsuarioService(usuarioRepository, passwordEncoder, politica, lockoutProperties);
     }
 

@@ -10,10 +10,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class LockoutProperties {
 
     /** Intentos fallidos consecutivos permitidos antes de bloquear la cuenta. */
-    private int maxIntentos = 5;
+    private int maxIntentos = 3;
 
-    /** Minutos que dura el bloqueo una vez se alcanza el máximo de intentos. */
-    private int minutosBloqueo = 15;
+    /** Segundos que dura el bloqueo una vez se alcanza el máximo de intentos. */
+    private int segundosBloqueo = 30;
 
     /** Intentos fallidos permitidos por dirección IP en la ventana de tiempo, sin importar la cuenta. */
     private int maxIntentosPorIp = 20;
@@ -29,12 +29,12 @@ public class LockoutProperties {
         this.maxIntentos = maxIntentos;
     }
 
-    public int getMinutosBloqueo() {
-        return minutosBloqueo;
+    public int getSegundosBloqueo() {
+        return segundosBloqueo;
     }
 
-    public void setMinutosBloqueo(int minutosBloqueo) {
-        this.minutosBloqueo = minutosBloqueo;
+    public void setSegundosBloqueo(int segundosBloqueo) {
+        this.segundosBloqueo = segundosBloqueo;
     }
 
     public int getMaxIntentosPorIp() {
